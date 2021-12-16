@@ -27,10 +27,10 @@ func (a ApplicationImpl) Write(ISRC string) error {
 		return errors.New("invalid ISRC value")
 	}
 
-	metadata, err := a.Adapter.Get(ISRC)
-	if err != nil {
-		return err
-	}
+	// metadata, err := a.Adapter.Get(ISRC)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

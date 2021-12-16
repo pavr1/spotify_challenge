@@ -49,7 +49,7 @@ func (a AdapterImpl) Get(ISRC string) (*models.Metadata, error) {
 		return nil, err
 	}
 
-	return metadata, nil
+	return &md, nil
 }
 
 func (a AdapterImpl) authorize() (string, error) {

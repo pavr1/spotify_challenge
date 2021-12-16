@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 
 	"spotify_challenge.com/src/connector"
@@ -24,12 +25,19 @@ func (s ServiceImpl) Write(metadata string) error {
 		return errors.New("invalid metadata")
 	}
 
-	statement := ""
+	//statement := ""
 
 	return nil
 }
 
-func (a ServiceImpl) ReadByISRC(ISRC string) (string, error) {
+func (a ServiceImpl) ReadByISRC(ctx context.Context, ISRC string) (string, error) {
+	if ISRC == "" {
+		return "", errors.New("invalid Isrc empty value")
+	}
+
+	// statement := fmt.Sprintf("SELECT (ISRC, URI, Title, ArtistNames) FROM Tracks WHERE ISRC = '%s'", ISRC)
+	// a.conn.Retrieve(ctx)
+
 	return "", nil
 }
 

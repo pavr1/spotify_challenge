@@ -15,7 +15,7 @@ type SpotifyData struct {
 
 func NewConfig() Config {
 	return Config{
-		ConnectionString: "server=PAVILLALOBOS;user id=;trusted_connection=true;database=msbeer;app name=msbeer",
+		ConnectionString: "server=PAVILLALOBOS;user id=;trusted_connection=true;database=spotify;app name=spotify",
 		DbProvider:       "mssql",
 		SpotifyData: SpotifyData{
 			AuthAPI:  "https://accounts.spotify.com/api/token",

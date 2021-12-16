@@ -4,30 +4,33 @@ import (
 	"context"
 	"database/sql"
 
-	"msbeer.com/src/models"
+	"spotify_challenge.com/src/models"
 )
 
 type Connector interface {
-	Execute(ctx context.Context, db *sql.DB, sqlStatement string) error
-	Retrieve(ctx context.Context, db *sql.DB, statement string) ([]models.BeerItem, error)
+	Execute(ctx context.Context, sqlStatement string) error
+	Retrieve(ctx context.Context, statement string) ([]models.DbTracks, error)
 }
 
 type ConnectorImpl struct {
+	db *sql.DB
 }
 
-func NewConnectorImpl() Connector {
-	return ConnectorImpl{}
+func NewConnectorImpl(db *sql.DB) Connector {
+	return ConnectorImpl{
+		db: db,
+	}
 }
 
-func (ConnectorImpl) Execute(ctx context.Context, db *sql.DB, sqlStatement string) error {
+func (c ConnectorImpl) Execute(ctx context.Context, sqlStatement string) error {
 	var err error
 
-	err = db.PingContext(ctx)
+	err = c.db.PingContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	query, err := db.Prepare(sqlStatement)
+	query, err := c.db.Prepare(sqlStatement)
 	if err != nil {
 		return err
 	}
@@ -44,37 +47,33 @@ func (ConnectorImpl) Execute(ctx context.Context, db *sql.DB, sqlStatement strin
 	return nil
 }
 
-func (ConnectorImpl) Retrieve(ctx context.Context, db *sql.DB, statement string) ([]models.BeerItem, error) {
+func (c ConnectorImpl) Retrieve(ctx context.Context, statement string) ([]models.DbTracks, error) {
 	ctx1 := context.Background()
-	err := db.PingContext(ctx1)
+	err := c.db.PingContext(ctx1)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := db.QueryContext(ctx, statement)
+	rows, err := c.db.QueryContext(ctx, statement)
 	if err != nil {
 		return nil, err
 	}
 
-	result := []models.BeerItem{}
+	result := []models.DbTracks{}
 
 	for rows.Next() {
-		var name, brewery, country, currency string
-		var id int
-		var price float64
+		var isrc, uri, title, artistNames string
 
-		err = rows.Scan(&id, &name, &brewery, &country, &price, &currency)
+		err = rows.Scan(&isrc, &uri, &title, &artistNames)
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, models.BeerItem{
-			ID:       id,
-			Name:     name,
-			Brewery:  brewery,
-			Country:  country,
-			Price:    price,
-			Currency: currency,
+		result = append(result, models.DbTracks{
+			ISRC:        isrc,
+			URI:         uri,
+			Title:       title,
+			ArtistNames: artistNames,
 		})
 	}
 
