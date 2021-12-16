@@ -20,11 +20,11 @@ type Adapter interface {
 type AdapterImpl struct {
 	spoktifyURL string
 	client      *http.Client
-	config      models.SpotifyData
+	config      models.SpotifyConfigData
 }
 
 //NewAdapterImpl returns an instance of AdapterImpl
-func NewAdapterImpl(url string, client *http.Client, config models.SpotifyData) Adapter {
+func NewAdapterImpl(url string, client *http.Client, config models.SpotifyConfigData) Adapter {
 	return AdapterImpl{
 		spoktifyURL: url,
 		client:      client,
