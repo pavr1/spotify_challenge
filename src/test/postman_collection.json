@@ -1,0 +1,73 @@
+{
+	"info": {
+		"_postman_id": "e8996883-03fe-4199-ba6d-aa10877f1afc",
+		"name": "test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Write",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://localhost:3000/Write/11dFghVXANMlKmJXsNCbNl",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"Write",
+						"11dFghVXANMlKmJXsNCbNl"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ReadByISRC",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/ReadByISRC/11dFghVXANMlKmJXsNCbNl",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"ReadByISRC",
+						"11dFghVXANMlKmJXsNCbNl"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ReadByArtist",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/ReadByArtist/Rae",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"ReadByArtist",
+						"Rae"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -36,10 +36,7 @@ func (c ConnectorImpl) Execute(ctx context.Context, sqlStatement string) error {
 	}
 
 	defer query.Close()
-	newRecord := query.QueryRowContext(ctx)
-
-	var newID int64
-	err = newRecord.Scan(&newID)
+	_, err = query.ExecContext(ctx)
 	if err != nil {
 		return err
 	}

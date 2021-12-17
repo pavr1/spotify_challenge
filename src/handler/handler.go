@@ -77,7 +77,7 @@ func (h HandlerImpl) ReadByISRC(w http.ResponseWriter, r *http.Request) {
 			render := NewRenderer(http.StatusOK, errors.New("track not found"), nil)
 			render.Render(w, r)
 		} else {
-			render := NewRenderer(http.StatusOK, nil, nil)
+			render := NewRenderer(http.StatusOK, nil, track)
 			render.Render(w, r)
 		}
 	}

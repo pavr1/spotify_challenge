@@ -68,7 +68,7 @@ func (a ApplicationImpl) ReadByArtist(ctx context.Context, name string) ([]model
 
 	tracks, err := a.Service.ReadByArtist(ctx, name)
 	if err != nil {
-		return []models.DbTracks{}, nil
+		return []models.DbTracks{}, err
 	}
 
 	return tracks, nil
