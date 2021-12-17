@@ -18,17 +18,15 @@ type Adapter interface {
 }
 
 type AdapterImpl struct {
-	spoktifyURL string
-	client      *http.Client
-	config      models.SpotifyConfigData
+	client *http.Client
+	config models.SpotifyConfigData
 }
 
 //NewAdapterImpl returns an instance of AdapterImpl
-func NewAdapterImpl(url string, client *http.Client, config models.SpotifyConfigData) Adapter {
+func NewAdapter(client *http.Client, config models.SpotifyConfigData) Adapter {
 	return AdapterImpl{
-		spoktifyURL: url,
-		client:      client,
-		config:      config,
+		client: client,
+		config: config,
 	}
 }
 
@@ -37,7 +35,8 @@ func (a AdapterImpl) Get(ISRC string) (*models.Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	metadata, err := a.track(t, ISRC)
+
+	metadata, err := a.track(t.Token, ISRC)
 	if err != nil {
 		return nil, err
 	}
@@ -52,32 +51,37 @@ func (a AdapterImpl) Get(ISRC string) (*models.Metadata, error) {
 	return &md, nil
 }
 
-func (a AdapterImpl) authorize() (string, error) {
+func (a AdapterImpl) authorize() (*models.Token, error) {
 	if a.client == nil {
-		return "", errors.New("client not provided")
+		return nil, errors.New("client not provided")
 	}
 
 	form := url.Values{}
 	form.Add("grant_type", "client_credentials")
 
-	req, err := http.NewRequest("POST", a.config.AuthAPI, strings.NewReader(form.Encode()))
+	req, err := http.NewRequest(http.MethodPost, a.config.AuthAPI, strings.NewReader(form.Encode()))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte("Basic "+a.config.ClientID+":"+a.config.Secret)))
+	req.Header.Add("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(a.config.ClientID+":"+a.config.Secret)))
 
 	resp, err := a.client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(b), nil
+	var t models.Token
+	err = json.Unmarshal(b, &t)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
 func (a AdapterImpl) track(token string, ISRC string) (string, error) {
@@ -85,7 +89,8 @@ func (a AdapterImpl) track(token string, ISRC string) (string, error) {
 		return "", errors.New("client not provided")
 	}
 
-	req, err := http.NewRequest("POST", a.config.TrackAPI, nil)
+	url := fmt.Sprintf(a.config.TrackAPI, ISRC)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
@@ -95,6 +100,9 @@ func (a AdapterImpl) track(token string, ISRC string) (string, error) {
 	resp, err := a.client.Do(req)
 	if err != nil {
 		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New(resp.Status)
 	}
 
 	b, err := ioutil.ReadAll(resp.Body)

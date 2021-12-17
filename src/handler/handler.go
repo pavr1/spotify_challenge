@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"context"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/render"
+	"github.com/gorilla/mux"
+	"spotify_challenge.com/src/application"
 )
 
 type CustomRenderer struct {
@@ -34,145 +38,62 @@ func NewRenderer(statusCode int, err error, data interface{}) render.Renderer {
 	}
 }
 
-// type HandlerImpl struct {
-// 	App application.BeerApplication
-// }
+type HandlerImpl struct {
+	App application.Application
+}
 
-// func NewHandler(app application.BeerApplication) HandlerImpl {
-// 	return HandlerImpl{
-// 		App: app,
-// 	}
-// }
+func NewHandler(app application.Application) HandlerImpl {
+	return HandlerImpl{
+		App: app,
+	}
+}
 
-// func (h HandlerImpl) HandleBeers(w http.ResponseWriter, r *http.Request) {
-// 	ctx := context.Background()
-// 	w.Header().Set("Content-Type", "application/json")
+func (h HandlerImpl) Write(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	vars := mux.Vars(r)
+	isrc := vars["ISRC"]
 
-// 	switch r.Method {
-// 	case "GET":
-// 		list, err := h.App.SearchBeers(ctx)
+	err := h.App.Write(ctx, isrc)
+	if err != nil {
+		render := NewRenderer(http.StatusInternalServerError, err, nil)
+		render.Render(w, r)
+	} else {
+		render := NewRenderer(http.StatusOK, nil, nil)
+		render.Render(w, r)
+	}
+}
 
-// 		if err != nil {
-// 			render := NewRenderer(http.StatusInternalServerError, err, nil)
-// 			render.Render(w, r)
-// 		} else {
-// 			render := NewRenderer(http.StatusOK, nil, list)
-// 			render.Render(w, r)
-// 		}
-// 	case "POST":
-// 		b, err := ioutil.ReadAll(r.Body)
-// 		if err != nil {
-// 			render := NewRenderer(http.StatusInternalServerError, err, nil)
-// 			render.Render(w, r)
-// 			return
-// 		}
+func (h HandlerImpl) ReadByISRC(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	vars := mux.Vars(r)
+	isrc := vars["ISRC"]
 
-// 		var beer models.BeerItem
-// 		err = json.Unmarshal(b, &beer)
-// 		if err != nil {
-// 			render := NewRenderer(http.StatusInternalServerError, err, nil)
-// 			render.Render(w, r)
-// 			return
-// 		}
+	track, err := h.App.ReadByISRC(ctx, isrc)
+	if err != nil {
+		render := NewRenderer(http.StatusInternalServerError, err, nil)
+		render.Render(w, r)
+	} else {
+		if track == nil {
+			render := NewRenderer(http.StatusOK, errors.New("track not found"), nil)
+			render.Render(w, r)
+		} else {
+			render := NewRenderer(http.StatusOK, nil, nil)
+			render.Render(w, r)
+		}
+	}
+}
 
-// 		result, err := h.App.SearchBeerById(ctx, beer.ID)
-// 		var customErrorMsg string
-// 		if err != nil {
-// 			customErrorMsg = "error while validating beer existance"
-// 		}
-// 		if result != nil {
-// 			customErrorMsg = "cannot insert, beer already exists for that id"
-// 		}
-// 		if beer.ID <= 0 {
-// 			customErrorMsg = "invalid id value"
-// 		}
-// 		if beer.Name == "" {
-// 			customErrorMsg = "invalid empty name value"
-// 		}
-// 		if beer.Brewery == "" {
-// 			customErrorMsg = "invalid empty brewery value"
-// 		}
-// 		if beer.Country == "" {
-// 			customErrorMsg = "invalid empty country value"
-// 		}
-// 		if beer.Price == 0 {
-// 			customErrorMsg = "invalid price value"
-// 		}
-// 		if beer.Currency == "" {
-// 			customErrorMsg = "invalid empty currency value"
-// 		}
+func (h HandlerImpl) ReadByArtist(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	vars := mux.Vars(r)
+	name := vars["Name"]
 
-// 		if customErrorMsg != "" {
-// 			render := NewRenderer(http.StatusInternalServerError, errors.New(customErrorMsg), nil)
-// 			render.Render(w, r)
-// 			return
-// 		}
-
-// 		err = h.App.AddBeers(ctx, beer)
-// 		if err != nil {
-// 			render := NewRenderer(http.StatusInternalServerError, errors.New(customErrorMsg), nil)
-// 			render.Render(w, r)
-// 		} else {
-// 			render := NewRenderer(http.StatusOK, nil, nil)
-// 			render.Render(w, r)
-// 		}
-// 	}
-// }
-
-// func (h HandlerImpl) HandleSearchBeerById(w http.ResponseWriter, r *http.Request) {
-// 	ctx := context.Background()
-// 	w.Header().Set("Content-Type", "application/json")
-
-// 	vars := mux.Vars(r)
-// 	idStr := vars["ID"]
-
-// 	id, err := strconv.Atoi(idStr)
-// 	if err != nil {
-// 		json.NewEncoder(w).Encode("Invalid ID value")
-// 		render.Status(r, http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	beer, err := h.App.SearchBeerById(ctx, id)
-
-// 	if err != nil {
-// 		render.Status(r, http.StatusInternalServerError)
-// 	} else {
-// 		json.NewEncoder(w).Encode(beer)
-
-// 		render.Status(r, http.StatusOK)
-// 	}
-// }
-
-// func (h HandlerImpl) HandleBoxBeerPriceById(w http.ResponseWriter, r *http.Request) {
-// 	ctx := context.Background()
-// 	w.Header().Set("Content-Type", "application/json")
-
-// 	vars := mux.Vars(r)
-// 	idStr := vars["ID"]
-// 	quantityStr := vars["Quantity"]
-// 	currencyStr := vars["Currency"]
-
-// 	id, err := strconv.Atoi(idStr)
-// 	if err != nil {
-// 		json.NewEncoder(w).Encode("Invalid ID value")
-// 		render.Status(r, http.StatusInternalServerError)
-// 		return
-// 	}
-// 	quantity, err := strconv.Atoi(quantityStr)
-// 	if err != nil {
-// 		json.NewEncoder(w).Encode("Invalid quantity value")
-// 		render.Status(r, http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	beer, err := h.App.BoxBeerPriceById(ctx, id, quantity, currencyStr)
-
-// 	if err != nil {
-// 		render.Status(r, http.StatusInternalServerError)
-// 	} else {
-// 		json.NewEncoder(w).Encode(beer)
-
-// 		render.Status(r, http.StatusOK)
-// 	}
-// }
+	track, err := h.App.ReadByArtist(ctx, name)
+	if err != nil {
+		render := NewRenderer(http.StatusInternalServerError, err, nil)
+		render.Render(w, r)
+	} else {
+		render := NewRenderer(http.StatusOK, nil, track)
+		render.Render(w, r)
+	}
+}

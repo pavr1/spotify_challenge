@@ -16,7 +16,7 @@ type ConnectorImpl struct {
 	db *sql.DB
 }
 
-func NewConnectorImpl(db *sql.DB) Connector {
+func NewConnector(db *sql.DB) Connector {
 	return ConnectorImpl{
 		db: db,
 	}

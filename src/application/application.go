@@ -10,6 +10,9 @@ import (
 )
 
 type Application interface {
+	Write(ctx context.Context, ISRC string) error
+	ReadByISRC(ctx context.Context, ISRC string) (*models.DbTracks, error)
+	ReadByArtist(ctx context.Context, name string) ([]models.DbTracks, error)
 }
 
 type ApplicationImpl struct {
